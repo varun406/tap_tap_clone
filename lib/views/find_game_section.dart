@@ -45,7 +45,7 @@ class _FindGameSectionState extends State<FindGameSection> {
                     );
                   },
                   scrollDirection: Axis.horizontal,
-                  itemCount: 15,
+                  itemCount: snapshot.data?.length,
                 ),
               );
             }

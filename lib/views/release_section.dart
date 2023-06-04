@@ -48,7 +48,7 @@ class _ReleaseSectionState extends State<ReleaseSection> {
                         );
                       },
                       scrollDirection: Axis.horizontal,
-                      itemCount: 15,
+                      itemCount: snapshot.data?.length,
                     ),
                   );
                 }

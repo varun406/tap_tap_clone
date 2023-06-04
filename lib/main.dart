@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:tap_tap_clone/screens/games_screen.dart';
 import 'package:tap_tap_clone/views/find_game_section.dart';
 import 'package:tap_tap_clone/views/release_section.dart';
+
+import 'components/section_heading.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,7 +36,7 @@ class MyApp extends StatelessWidget {
         GetPage(
             name: "/",
             page: () => MyHomePage(),
-            transition: Transition.rightToLeft,
+            transition: Transition.leftToRight,
             transitionDuration: Duration(milliseconds: 250))
       ],
       home: MyHomePage(),
@@ -45,6 +49,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+// ignore: must_be_immutable
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 0;
 
@@ -52,6 +57,20 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       selectedIndex = index;
     });
+  }
+
+  Future<List>? gameList;
+
+  Future<List> getGames() async {
+    var res = await Dio().get("https://www.freetogame.com/api/games");
+    return res.data;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    gameList = getGames();
   }
 
   @override
@@ -89,7 +108,68 @@ class _MyHomePageState extends State<MyHomePage> {
             borderRadius: BorderRadius.all(Radius.circular(50)),
             side: BorderSide()),
         onPressed: () {
-          Get.snackbar("Hi", "Message", colorText: Colors.white);
+          showModalBottomSheet(
+              backgroundColor: Colors.black,
+              showDragHandle: true,
+              context: context,
+              builder: (context) => SizedBox(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "All Games",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: "SecularOne",
+                                fontSize: 16),
+                          ),
+                          FutureBuilder<List>(
+                            future: gameList, // async work
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List> snapshot) {
+                              if (snapshot.hasData) {
+                                return SizedBox(
+                                  height: 360,
+                                  child: ListView.builder(
+                                    itemBuilder: (context, index) {
+                                      return ListTile(
+                                        textColor: Colors.white,
+                                        leading: CircleAvatar(
+                                          radius: 35,
+                                          backgroundImage: NetworkImage(snapshot
+                                              .data![index]['thumbnail']),
+                                        ),
+                                        title: Text(
+                                            snapshot.data![index]['title'],
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontFamily: "SecularOne",
+                                                overflow:
+                                                    TextOverflow.ellipsis)),
+                                        subtitle: Text(
+                                            "${snapshot.data![index]['platform']} •  ${snapshot.data![index]['genre']}",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontFamily: "Geologica",
+                                            )),
+                                      );
+                                    },
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: snapshot.data!.length,
+                                  ),
+                                );
+                              }
+                              return Center(
+                                child: LoadingAnimationWidget.prograssiveDots(
+                                  color: Colors.white,
+                                  size: 100,
+                                ),
+                              );
+                            },
+                          )
+                        ]),
+                  ));
         },
         child: Icon(Icons.add),
       ),
@@ -107,7 +187,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             GButton(
               icon: Icons.games_outlined,
-              active: Get.currentRoute == "/games",
               onPressed: () => {
                 Get.toNamed("/games", arguments: {
                   "link": "https://www.freetogame.com/api/games",

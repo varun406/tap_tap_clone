@@ -12,6 +12,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   Future<List>? catGames;
+  var genre;
   int selectedIndex = 0;
 
   void changeTab(index) {
@@ -30,6 +31,7 @@ class _GameScreenState extends State<GameScreen> {
     // TODO: implement initState
     super.initState();
     catGames = getCatGames();
+    genre = Get.arguments['genre'];
   }
 
   @override
@@ -70,12 +72,6 @@ class _GameScreenState extends State<GameScreen> {
             GButton(
               icon: Icons.games_outlined,
               active: Get.currentRoute == "/games",
-              onPressed: () => {
-                Get.toNamed("/games", arguments: {
-                  "link": "https://www.freetogame.com/api/games",
-                  "genre": "All Categories",
-                })
-              },
             ),
           ]),
       body: FutureBuilder<List>(
@@ -91,6 +87,7 @@ class _GameScreenState extends State<GameScreen> {
                     genre: snapshot.data![index]['genre'],
                   );
                 },
+                itemCount: snapshot.data?.length,
                 scrollDirection: Axis.vertical,
               ),
             );
